@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10x10 Grid with Paths</title>
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(10, 50px);
+            gap: 2px;
+        }
+
+        .grid-cell {
+            width: 50px;
+            height: 50px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+        }
+
+        .start {
+            background-color: green;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .end {
+            background-color: green;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .end-red {
+            background-color: red;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .path {
+            background-color: purple;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="grid">
+        <!-- JavaScript will fill this grid -->
+    </div>
+
+    <script>
+        const grid = document.querySelector('.grid');
+        const gridSize = 10;
+        function getRandomPosition() {
+            return Math.floor(Math.random() * gridSize);
+        }
+
+        // Function to check if a cell is a junction
+        function isJunction(row, col) {
+            let directions = 0;
+
+            // Check all four possible directions
+            if (row > 0) directions++; // Up
+            if (row < gridSize - 1) directions++; // Down
+            if (col > 0) directions++; // Left
+            if (col < gridSize - 1) directions++; // Right
+
+            return directions > 2; // A junction has more than 2 directions
+        }
+
+        let startRow, startCol, endRow, endCol, endRow2, endCol2;
+
+        // Generate random positions for start and end points
+        do {
+            startRow = getRandomPosition();
+            startCol = getRandomPosition();
+            endRow = getRandomPosition();
+            endCol = getRandomPosition();
+            endRow2 = getRandomPosition();
+            endCol2 = getRandomPosition();
+        } while (
+            isJunction(startRow, startCol) || // Ensure start is not a junction
+            (startRow === endRow && startCol === endCol) ||
+            (startRow === endRow2 && startCol === endCol2) ||
+            (endRow === endRow2 && endCol === endCol2) // Ensure they are different
+        );
+
+        // Ayush Ka Dimag(Basics eji itna bhi basic nahi hei)
+
+        class PriorityQueue {
+            constructor() {
+                this.elements = [];
+            }
+
+            enqueue(element) {
+                this.elements.push(element);
+                this.bubbleUp();
+            }
+
+            dequeue() {
+                if (this.elements.length === 0) return null;
+                const max = this.elements[0];
+                const end = this.elements.pop();
+                if (this.elements.length > 0) {
+                    this.elements[0] = end;
+                    this.bubbleDown();
+                }
+                return max;
+            }
+
+            bubbleUp() {
+                let index = this.elements.length - 1;
+                const element = this.elements[index];
+                while (index > 0) {
+                    let parentIndex = Math.floor((index - 1) / 2);
+                    let parent = this.elements[parentIndex];
+                    if (element.f >= parent.f) break; // Stop if the element is in the correct position
+                    this.elements[parentIndex] = element;
+                    this.elements[index] = parent;
+                    index = parentIndex;
+                }
+            }
+
+            bubbleDown() {
+                let index = 0;
+                const length = this.elements.length;
+                const element = this.elements[0];
+
+                while (true) {
+                    let leftChildIndex = 2 * index + 1;
+                    let rightChildIndex = 2 * index + 2;
+                    let leftChild, rightChild;
+                    let swap = null;
+
+                    if (leftChildIndex < length) {
+                        leftChild = this.elements[leftChildIndex];
+                        if (leftChild.f < element.f) {
+                            swap = leftChildIndex;
+                        }
+                    }
+
+                    if (rightChildIndex < length) {
+                        rightChild = this.elements[rightChildIndex];
+                        if (
+                            (swap === null && rightChild.f < element.f) ||
+                            (swap !== null && rightChild.f < leftChild.f)
+                        ) {
+                            swap = rightChildIndex;
+                        }
+                    }
+
+                    if (swap === null) break;
+
+                    this.elements[index] = this.elements[swap];
+                    this.elements[swap] = element;
+                    index = swap;
+                }
+            }
+
+            size() {
+                return this.elements.length;
+            }
+
+            includes(element) {
+                return this.elements.some(e => e.row === element.row && e.col === element.col);
+            }
+        }
+
+        function createPath(startRow, startCol, endRow, endCol) {
+            const openSet = new PriorityQueue(); // Priority queue for A*
+            const cameFrom = new Map(); // To reconstruct the path
+            const gScore = new Map(); // Cost from start to current node
+            const fScore = new Map(); // Estimated cost from start to end through current node
+            const directions = [
+                [0, 1], // Right
+                [1, 0], // Down
+                [0, -1], // Left
+                [-1, 0]  // Up
+            ];
+
+            // Initialize the scores
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    gScore.set(`${row},${col}`, Infinity); // Initial cost is infinite
+                    fScore.set(`${row},${col}`, Infinity); // Initial estimated cost is infinite
+                }
+            }
+
+            gScore.set(`${startRow},${startCol}`, 0); // Start cost is 0
+            fScore.set(`${startRow},${startCol}`, manhattanDistance(startRow, startCol, endRow, endCol)); // Initial heuristic cost
+
+            // Add the start point to the open set
+            openSet.enqueue({ row: startRow, col: startCol, f: fScore.get(`${startRow},${startCol}`) });
+
+            while (openSet.size() > 0) {
+                const current = openSet.dequeue(); // Get the node with the lowest fScore
+                const currentRow = current.row;
+                const currentCol = current.col;
+
+                // Check if we have reached the end
+                if (currentRow === endRow && currentCol === endCol) {
+                    const path = reconstructPath(cameFrom, currentRow, currentCol);
+                    markPathInGrid(path);
+                    return; // Exit the function after finding the path
+                }
+
+                // Explore neighboring cells
+                for (const [dRow, dCol] of directions) {
+                    const newRow = currentRow + dRow;
+                    const newCol = currentCol + dCol;
+
+                    // Check bounds
+                    if (newRow >= 0 && newRow < gridSize && newCol >= 0 && newCol < gridSize) {
+                        const tentativeGScore = gScore.get(`${currentRow},${currentCol}`) + 1; // +1 for each move
+
+                        // If the tentative score is better, update the path
+                        if (tentativeGScore < gScore.get(`${newRow},${newCol}`)) {
+                            cameFrom.set(`${newRow},${newCol}`, `${currentRow},${currentCol}`);
+                            gScore.set(`${newRow},${newCol}`, tentativeGScore);
+                            fScore.set(`${newRow},${newCol}`, tentativeGScore + manhattanDistance(newRow, newCol, endRow, endCol));
+
+                            // Only add the new position if it's not already in the open set
+                            if (!openSet.includes({ row: newRow, col: newCol })) {
+                                openSet.enqueue({ row: newRow, col: newCol, f: fScore.get(`${newRow},${newCol}`) });
+                            }
+                        }
+                    }
+                }
+            }
+
+            console.log("No path found");
+        }
+
+        // Function to reconstruct the path from end to start
+        function reconstructPath(cameFrom, currentRow, currentCol) {
+            const totalPath = [[currentRow, currentCol]];
+            while (cameFrom.has(`${currentRow},${currentCol}`)) {
+                const previous = cameFrom.get(`${currentRow},${currentCol}`);
+                const [prevRow, prevCol] = previous.split(',').map(Number);
+                totalPath.push([prevRow, prevCol]);
+                currentRow = prevRow;
+                currentCol = prevCol;
+            }
+            return totalPath.reverse(); // Reverse the path to get from start to end
+        }
+
+        // Function to mark the path in the grid
+        function markPathInGrid(path) {
+            path.forEach(([r, c]) => {
+                const cell = document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+                if (cell) cell.classList.add('path');
+            });
+        }
+        
+        // Helper function to calculate Manhattan distance
+        function manhattanDistance(row1, col1, row2, col2) {
+            return Math.abs(row1 - row2) + Math.abs(col1 - col2);
+        }
+
+        // Helper function to generate Gaussian noise
+        function gaussianNoise(mean = 0, stdDev = 1) {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random(); // Converting [0,1) to (0,1)
+            while (v === 0) v = Math.random();
+            const noise = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+            return mean + stdDev * noise;
+        }
+        
+        // ---------------------ends here---------------------
+
+        // Creating the grid and filling it with A* heuristic values with Gaussian noise
+        for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+                const cell = document.createElement('div');
+                cell.classList.add('grid-cell');
+                cell.dataset.row = row;
+                cell.dataset.col = col;
+
+                // Mark start and end cells
+                if (row === startRow && col === startCol) {
+                    cell.classList.add('start');
+                    cell.textContent = 'Start';
+                } else if (row === endRow && col === endCol) {
+                    cell.classList.add('end');
+                    cell.textContent = 'End';
+                } else if (row === endRow2 && col === endCol2) {
+                    cell.classList.add('end-red');
+                    cell.textContent = 'End 2';
+                } else {
+                    // Calculate A* heuristic value (Manhattan distance) for other cells
+                    const distanceToEnd1 = manhattanDistance(row, col, endRow, endCol);
+                    const distanceToEnd2 = manhattanDistance(row, col, endRow2, endCol2);
+                    const minDistance = Math.min(distanceToEnd1, distanceToEnd2); // Choose the closer end point
+
+                    // Add Gaussian noise to the heuristic value
+                    const noise = gaussianNoise(0, 1); // Mean of 0, standard deviation of 1
+                    const noisyHeuristicValue = Math.max(0, Math.round(minDistance + noise)); // Ensure the value is non-negative
+
+                    cell.textContent = noisyHeuristicValue; // Display the noisy heuristic value
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        // Generate two paths
+        createPath(startRow, startCol, endRow, endCol); // First path to the first endpoint
+        // createPath(startRow, startCol, endRow2, endCol2); // Second path to the second endpoint
+
+    </script>
+
+</body>
+
+</html>
