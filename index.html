@@ -22,7 +22,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        align-content:flex-start;
+        align-content: flex-start;
         flex-wrap: wrap;
         height: 100vh;
         background-color: #f0f0f0;
@@ -79,7 +79,7 @@
         text-align: center;
     }
 
-    #container-1{
+    #container-1 {
         width: 500px;
         padding: 1em;
     }
@@ -91,6 +91,20 @@
 
     .score {
         text-align: center;
+    }
+
+    .menu {
+        background-color: #bbbaba65;
+        display: flex;
+        justify-content: space-evenly;
+        padding: 1em;
+        border-radius: 20px;
+    }
+
+    .btn {
+        padding: 5px;
+        font-weight: 600;
+        cursor: pointer;
     }
 
     @media(max-width:500px) {
@@ -108,7 +122,11 @@
     <div id="container-1">
         <div class="message">
             In this game, the goal is to strategize and plan the path for the red boxes to reach their designated
-            endpoints, marked at the top.Click on the <b>Green Boxes</b> to Change the Path.This is a great brain exercise!
+            endpoints, marked at the top.Click on the <b>Green Boxes</b> to Change the Path.This is a great brain
+            exercise!
+        </div>
+        <div class="menu">
+            <button class="btn pause" onclick="togglePause()">Pause</button>
         </div>
         <div class="score-board">
             <div class="wins">
@@ -124,6 +142,13 @@
     <div class="grid-container"></div>
 </body>
 <script>
+    function togglePause() {
+        isPause = isPause ? false : true
+        pauseBtn = document.querySelector(".pause")
+        if (isPause) pauseBtn.innerHTML = "Unpause"
+        else pauseBtn.innerHTML = "pause"
+    }
+    var isPause = false
     const gridSize = 10
     let gridMatrix = new Array(gridSize)
     for (var i = 0; i < gridSize; i++) {
@@ -342,10 +367,12 @@
             }
             let s_r = parseInt(current_cell.dataset.row);
             let s_c = parseInt(current_cell.dataset.col);
-            if (d == 0) --s_r;
-            else if (d == 1) ++s_c;
-            else if (d == 2) ++s_r;
-            else if (d == 3) --s_c;
+            if (!isPause) {
+                if (d == 0) --s_r;
+                else if (d == 1) ++s_c;
+                else if (d == 2) ++s_r;
+                else if (d == 3) --s_c;
+            }
             train_move(id, [s_r, s_c], speed);
         }, (1 / speed) * 5000);
     }
@@ -379,9 +406,11 @@
     }
 
     setInterval(async () => {
-        end = getRandomElementFromOne()
-        id = getRandomNumber()
-        await train_init(id, end, 3)
+        if (!isPause) {
+            end = getRandomElementFromOne()
+            id = getRandomNumber()
+            await train_init(id, end, 3)
+        }
     }, 4500);
 </script>
 
