@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Train Game</title>
 </head>
+
 <style>
     * {
         box-sizing: border-box;
@@ -64,7 +65,7 @@
     }
 
     .start {
-        background-color: #974f4f
+        background-color: #247fe5
     }
 
     .end {
@@ -82,38 +83,118 @@
     #container-1 {
         width: 500px;
         padding: 1em;
+        margin: 5px 0px 5px 0;
+    }
+
+    .message {
+        background-color: #f9f9f9;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        max-width: 450px;
+        margin: 20px auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+    }
+
+    .message h3 {
+        color: #333;
+        /* font-size: 1.6em; */
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    .message ol {
+        padding-left: 20px;
+        color: #555;
+        font-size: 1em;
+        line-height: 1.5;
+    }
+
+    .menu {
+        display: flex;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 1em;
+        color: white;
+        background-color: #4caf50;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn.pause:hover {
+        background-color: #45a049;
     }
 
     .score-board {
         display: flex;
         justify-content: space-around;
+        margin-top: 20px;
+    }
+
+    .score-board>div {
+        text-align: center;
+        background-color: #eee;
+        padding: 5px;
+        border-radius: 8px;
+        width: 100px;
+    }
+
+    .score-board h3 {
+        font-size: 1em;
+        color: #333;
+        margin-bottom: 5px;
     }
 
     .score {
-        text-align: center;
+        /* font-size: 1.5em; */
+        color: #333;
+        font-weight: bold;
     }
 
-    .menu {
-        background-color: #bbbaba65;
-        display: flex;
-        justify-content: space-evenly;
-        padding: 1em;
-        border-radius: 20px;
+    .wins {
+        background-color: #d1f5d3;
     }
 
-    .btn {
-        padding: 5px;
-        font-weight: 600;
-        cursor: pointer;
+    .loses {
+        background-color: #f8d7da;
     }
 
     @media(max-width:500px) {
         :root {
             --cell-width: 35px
         }
-
+        #container-1{
+            padding: 0;
+        }
         .train {
             font-size: 10px;
+        }
+        .message {
+            padding: 15px;
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        .menu .btn {
+            font-size: 0.9em;
+            padding: 8px 16px;
+        }
+
+        .score-board {
+            /* flex-direction: column; */
+            /* align-items: center; */
+            margin-top: 0;
+        }
+
+        .message ol {
+            font-size: 0.9em;
         }
     }
 </style>
@@ -121,34 +202,38 @@
 <body>
     <div id="container-1">
         <div class="message">
-            In this game, the goal is to strategize and plan the path for the red boxes to reach their designated
-            endpoints, marked at the top.Click on the <b>Green Boxes</b> to Change the Path.This is a great brain
-            exercise!
-        </div>
-        <div class="menu">
-            <button class="btn pause" onclick="togglePause()">Pause</button>
-        </div>
-        <div class="score-board">
-            <div class="wins">
-                <h3>Wins</h3>
-                <div class="score">0</div>
+            <h3>How to Play</h3>
+            <ol>
+                <li>A red moving box with a number on top will appear.</li>
+                <li>Click the green boxes to change the box's path.</li>
+                <li>Boxes with random stations will appear continuously, so adjust the path in real-time.</li>
+            </ol>
+            <div class="menu">
+                <button class="btn pause" onclick="togglePause()">Start</button>
             </div>
-            <div class="loses">
-                <h3>Losses</h3>
-                <div class="score">0</div>
+            <div class="score-board">
+                <div class="wins">
+                    <h3>Wins</h3>
+                    <div class="score">0</div>
+                </div>
+                <div class="loses">
+                    <h3>Losses</h3>
+                    <div class="score">0</div>
+                </div>
             </div>
         </div>
     </div>
     <div class="grid-container"></div>
 </body>
+
 <script>
     function togglePause() {
         isPause = isPause ? false : true
         pauseBtn = document.querySelector(".pause")
-        if (isPause) pauseBtn.innerHTML = "Unpause"
-        else pauseBtn.innerHTML = "pause"
+        if (isPause) pauseBtn.innerHTML = "Start"
+        else pauseBtn.innerHTML = "Pause"
     }
-    var isPause = false
+    var isPause = true
     const gridSize = 10
     let gridMatrix = new Array(gridSize)
     for (var i = 0; i < gridSize; i++) {
@@ -313,8 +398,10 @@
     }
 
     async function train_init(id, endPoint, speed) {
-        const start = document.querySelector(".start");
-        const { x, y } = start.getBoundingClientRect();
+        var start = document.querySelector(".start");
+        const pos = start.getBoundingClientRect();
+        const x = pos.left + window.scrollX
+        const y = pos.top + window.scrollY
         const d = +start.dataset.direction;
         const train = document.createElement("div");
         train.id = `train_${id}`;
