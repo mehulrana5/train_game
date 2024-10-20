@@ -296,7 +296,7 @@
     var start = []
     var ends = []
     var validJunctionCells = []
-    var neighbors=[[-1,0],[0,1],[1,0],[0,-1]]
+    var neighbors = [[-1, 0], [0, 1], [1, 0], [0, -1]]
     function validDirections(r, c) {
         var d = [1, 1, 1, 1]
         if (r - 1 < 0) d[0] = 0
@@ -353,9 +353,9 @@
         const pq = [[0 + heuristic(start[0], start[1]), 0, start[0], start[1], []]];
         while (pq.length) {
             const [fScore, gScore, r, c, path] = pq.shift();
-            if (r === end[0] && c === end[1]){
+            if (r === end[0] && c === end[1]) {
                 // console.log(path.length);
-                if(path.length<4)location.reload()
+                if (path.length < 4) location.reload()
                 // console.log(`path for [[${start}],[${end}]]`);
                 // console.log(path);
                 return [...path, [r, c]];
@@ -415,7 +415,7 @@
                 && r < rows
                 && c >= 0
                 && c < cols
-                && visited[r][c]==false
+                && visited[r][c] == false
                 // && usedIndex[`${r},${c}`]==0
             ) {
                 const newPath = [...path, [r, c]];
@@ -434,6 +434,7 @@
     }
     function constructPath(path) {
         console.log("log of constructPath");
+        var temp = []
         path.forEach((e, idx) => {
             if (
                 idx + 1 != path.length
@@ -448,7 +449,7 @@
                 else if (c1 != c2 && c1 - c2 > 0) d = 3
                 else d = 1
                 if (gridMatrix[r1][c1][0] == '3') return
-                if (idx !== 0 && idx != 1) validJunctionCells.push([r1, c1])
+                if (idx !== 0 && idx != 1) temp.push([r1, c1])
                 gridMatrix[r1][c1] = `1.${d}`
                 usedIndex[`${r1},${c1}`] = 1
             }
@@ -467,28 +468,35 @@
         //         ) usedIndex[`${nr},${nc}`] = 1
         //     });
         // })
-        validJunctionCells.pop()
+        temp.pop()
+        validJunctionCells.push(temp)
     }
     function nextRandomStart(endPoint) {
         console.log("log of nextRandomStart");
         var invalidJunctionCells = {}
-        var l = validJunctionCells.length
-        var s = Math.floor(Math.random() * l)
+        const l1 = validJunctionCells.length
+        var s1 = Math.floor(Math.random() * l1)
+        var l2 = validJunctionCells[s1].length
+        var s2 = Math.floor(Math.random() * l2)
         var crt = 0
-        for (let i = 0; i < l; i++) {
-            const e = validJunctionCells[i];
-            invalidJunctionCells[`${e[0]},${e[1]}`] = 0
+        for (let i = 0; i < l1; i++) {
+            for (let j = 0; j < validJunctionCells[i].length; j++) {
+                const e = validJunctionCells[i][j];
+                invalidJunctionCells[`${e[0]},${e[1]}`] = 0
+            }
         }
         while (
             invalidJunctionCells[
-            `${validJunctionCells[s][0]},${validJunctionCells[s][1]}`
+            `${validJunctionCells[s1][s2][0]},${validJunctionCells[s1][s2][1]}`
             ] == 0
-            || bfs(validJunctionCells[s], endPoint) == null
+            || bfs(validJunctionCells[s1][s2], endPoint) == null
         ) {
             invalidJunctionCells[
-                `${validJunctionCells[s][0]},${validJunctionCells[s][1]}`
+                `${validJunctionCells[s1][s2][0]},${validJunctionCells[s1][s2][1]}`
             ] = 1
-            s = Math.floor(Math.random() * l)
+            s1 = Math.floor(Math.random() * l1)
+            l2 = validJunctionCells[s1].length
+            s2 = Math.floor(Math.random() * l2)
             if (crt > 10) {
                 console.log("found no valid junction");
                 // location.reload()
@@ -496,7 +504,7 @@
             }
             crt++
         }
-        return validJunctionCells[s]
+        return validJunctionCells[s1][s2]
     }
     function generateRandomMap(nodes) {
         console.log("log of generateRandomMap");
@@ -520,7 +528,7 @@
                 var d1 = gridMatrix[r1][c1].split(".")[1]
                 gridMatrix[r1][c1] = `3.${d1}`
                 path = aStar([r1, c1], [r2, c2])
-                validJunctionCells = []
+                // validJunctionCells = []
                 constructPath(path)
             }
         } catch (error) {
@@ -622,12 +630,32 @@
         });
     }
     function toggleTrack(cell) {
-        cur_d = parseInt(cell.dataset.direction)
-        jun_num = parseInt(cell.dataset.junctionNum)
-        next_d = (cur_d + 1) % 4
+        console.log('log of toggleTrack');
+        const cur_d = parseInt(cell.dataset.direction)
+        const jun_num = parseInt(cell.dataset.junctionNum)
+        var r = +cell.dataset.row
+        var c = +cell.dataset.col
+        const d1 = validDirections(r, c);
+        const directionsOffsets = [
+            [-1, 0],
+            [0, 1],
+            [1, 0],
+            [0, -1]
+        ];
+        const invalidConditions = ['2', '3', '0', '1']; 
+        for (let i = 0; i < 4; i++) {
+            if (d1[i] === 1) {
+                const rOffset = directionsOffsets[i][0];
+                const cOffset = directionsOffsets[i][1];
+                const d2 = gridMatrix[r + rOffset][c + cOffset];
+                junctions_valid_directions[jun_num][i] = (d2[2] !== invalidConditions[i] && d2[0] !== '5') ? 1 : 0;
+            }
+        }
+        var next_d = (cur_d + 1) % 4
         while (junctions_valid_directions[jun_num][next_d] == 0) next_d = (next_d + 1) % 4
         cell.setAttribute("data-direction", next_d)
         cell.innerHTML = track_directions[next_d]
+        gridMatrix[r][c] = `3.${next_d}`
     }
     function train_init(id, endPoint, speed) {
         var start = document.querySelector(".start");
@@ -712,9 +740,9 @@
                     selectId = Math.floor(Math.random() * 100) + 1;
                 }
                 active_ids[selectId] = 1
-                train_init(selectId, end, 3)
+                train_init(selectId, end, 4)
             }
-        }, 5500);
+        }, 5000);
     }
     catch (error) {
         console.log(error);
