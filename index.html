@@ -49,7 +49,7 @@
     }
 
     .track-straight {
-        background-color: #aaf;
+        background-color: #ffffff00;
     }
 
     .track-curve {
@@ -229,18 +229,41 @@
 </body>
 
 <script>
-    function togglePause() {
-        isPause = isPause ? false : true
-        pauseBtn = document.querySelector(".pause")
-        if (isPause) pauseBtn.innerHTML = "Start"
-        else pauseBtn.innerHTML = "Pause"
-    }
     var isPause = true
     const gridSize = 10
-    let gridMatrix = new Array(gridSize)
+    var gridMatrix = new Array(gridSize)
     var res = []
     var active_ids = {}
-
+    var usedIndex = {}
+    var start = []
+    var ends = []
+    var validJunctionCells = []
+    var neighbors = [[-1, 0], [0, 1], [1, 0], [0, -1]]
+    const track_directions = [
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.14645 2.14645C7.34171 1.95118 7.65829 1.95118 7.85355 2.14645L11.8536 6.14645C12.0488 6.34171 12.0488 6.65829 11.8536 6.85355C11.6583 7.04882 11.3417 7.04882 11.1464 6.85355L8 3.70711L8 12.5C8 12.7761 7.77614 13 7.5 13C7.22386 13 7 12.7761 7 12.5L7 3.70711L3.85355 6.85355C3.65829 7.04882 3.34171 7.04882 3.14645 6.85355C2.95118 6.65829 2.95118 6.34171 3.14645 6.14645L7.14645 2.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 2C7.77614 2 8 2.22386 8 2.5L8 11.2929L11.1464 8.14645C11.3417 7.95118 11.6583 7.95118 11.8536 8.14645C12.0488 8.34171 12.0488 8.65829 11.8536 8.85355L7.85355 12.8536C7.75979 12.9473 7.63261 13 7.5 13C7.36739 13 7.24021 12.9473 7.14645 12.8536L3.14645 8.85355C2.95118 8.65829 2.95118 8.34171 3.14645 8.14645C3.34171 7.95118 3.65829 7.95118 3.85355 8.14645L7 11.2929L7 2.5C7 2.22386 7.22386 2 7.5 2Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.85355 3.14645C7.04882 3.34171 7.04882 3.65829 6.85355 3.85355L3.70711 7H12.5C12.7761 7 13 7.22386 13 7.5C13 7.77614 12.7761 8 12.5 8H3.70711L6.85355 11.1464C7.04882 11.3417 7.04882 11.6583 6.85355 11.8536C6.65829 12.0488 6.34171 12.0488 6.14645 11.8536L2.14645 7.85355C1.95118 7.65829 1.95118 7.34171 2.14645 7.14645L6.14645 3.14645C6.34171 2.95118 6.65829 2.95118 6.85355 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+    ]
+    const track_curves_directions={
+        '0,1':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="scale(1 -1)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '1,2':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="matrix(0 1 1 0 0 0)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '2,3':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="scale(-1 1)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '3,0':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="scale(1 -1)rotate(90)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '1,0':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="rotate(-90)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '0,3':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="rotate(180)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '3,2':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="rotate(90)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '2,1':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`
+    }
+    const start_directions = [
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 3C9 2.44772 8.55229 2 8 2H7C6.44772 2 6 2.44772 6 3L6 14H1.5C1.22386 14 1 14.2239 1 14.5C1 14.7761 1.22386 15 1.5 15L6 15H9H13.5C13.7761 15 14 14.7761 14 14.5C14 14.2239 13.7761 14 13.5 14H9V3Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.499995 0.999995C0.223855 0.999995 -5.58458e-07 1.22385 -5.46388e-07 1.49999L-2.18554e-08 13.4999C-9.78492e-09 13.776 0.223855 13.9999 0.499995 13.9999C0.776136 13.9999 0.999991 13.776 0.999991 13.4999L0.999991 8.99993L12 8.99993C12.5523 8.99993 13 8.55222 13 7.99993L13 6.99994C13 6.44766 12.5523 5.99995 12 5.99995L0.999991 5.99995L0.999991 1.49999C0.999991 1.22385 0.776135 0.999995 0.499995 0.999995Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 0C1.22386 0 1 0.223858 1 0.5C1 0.776142 1.22386 1 1.5 1H6V12C6 12.5523 6.44772 13 7 13H8C8.55228 13 9 12.5523 9 12V1H13.5C13.7761 1 14 0.776142 14 0.5C14 0.223858 13.7761 0 13.5 0H9H6H1.5Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.4999 1C14.2237 1 13.9999 1.22386 13.9999 1.5L13.9999 6L2.99988 6C2.44759 6 1.99988 6.44772 1.99988 7L1.99988 8C1.99988 8.55228 2.44759 9 2.99988 9L13.9999 9L13.9999 13.5C13.9999 13.7761 14.2237 14 14.4999 14C14.776 14 14.9999 13.7761 14.9999 13.5L14.9999 9L14.9999 6L14.9999 1.5C14.9999 1.22386 14.776 1 14.4999 1Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+    ]
+    var junctions_valid_directions = []
+    const wins = document.querySelector(".wins>div")
+    const loses = document.querySelector(".loses>div")
     for (var i = 0; i < gridSize; i++) {
         gridMatrix[i] = new Array(gridSize)
     }
@@ -249,54 +272,13 @@
             gridMatrix[i][j] = "5.0"
         }
     }
-
-    // Dummy map
-    // ends
-    // gridMatrix[0][2] = "4.0.1"
-    // gridMatrix[7][0] = "4.0.2"
-    // gridMatrix[9][0] = "4.0.3"
-    // gridMatrix[8][3] = "4.0.4"
-    // gridMatrix[6][7] = "4.0.5"
-    // gridMatrix[2][7] = "4.0.6"
-    // gridMatrix[0][7] = "4.0.7"
-    // // start
-    // gridMatrix[2][1] = "0.1"
-    // // junctions
-    // gridMatrix[7][1] = "3.3"
-    // gridMatrix[5][3] = "3.3"
-    // gridMatrix[5][5] = "3.0"
-    // gridMatrix[2][5] = "3.0"
-    // gridMatrix[0][5] = "3.3"
-    // // path
-    // gridMatrix[0][3] = "1.3"
-    // gridMatrix[0][4] = "1.3"
-    // gridMatrix[0][6] = "1.1"
-    // gridMatrix[1][5] = "1.0"
-    // gridMatrix[2][2] = "1.1"
-    // gridMatrix[2][6] = "1.1"
-    // gridMatrix[2][3] = "1.2"
-    // gridMatrix[3][3] = "1.2"
-    // gridMatrix[3][5] = "1.0"
-    // gridMatrix[4][3] = "1.2"
-    // gridMatrix[4][5] = "1.0"
-    // gridMatrix[5][1] = "1.2"
-    // gridMatrix[5][2] = "1.3"
-    // gridMatrix[5][4] = "1.1"
-    // gridMatrix[6][1] = "1.2"
-    // gridMatrix[6][3] = "1.2"
-    // gridMatrix[6][5] = "1.1"
-    // gridMatrix[6][6] = "1.1"
-    // gridMatrix[7][3] = "1.2"
-    // gridMatrix[8][1] = "1.2"
-    // gridMatrix[9][1] = "1.3"
-    // -------
-
     // --------------Random Map Generator--------------
-    var usedIndex = {}
-    var start = []
-    var ends = []
-    var validJunctionCells = []
-    var neighbors = [[-1, 0], [0, 1], [1, 0], [0, -1]]
+    function togglePause() {
+        isPause = isPause ? false : true
+        pauseBtn = document.querySelector(".pause")
+        if (isPause) pauseBtn.innerHTML = "Start"
+        else pauseBtn.innerHTML = "Pause"
+    }    
     function validDirections(r, c) {
         var d = [1, 1, 1, 1]
         if (r - 1 < 0) d[0] = 0
@@ -315,7 +297,6 @@
         gridMatrix[r][c] = `0.${t1}`
         usedIndex[`${r},${c}`] = 1
         start = [r, c]
-        gridMatrix[r][c] = `0.${t1}`
     }
     function randomEndGen(n, s) {
         console.log("log of randomEndGen");
@@ -330,7 +311,7 @@
                 || usedIndex[`${r + 1},${c}`] == 1
                 || usedIndex[`${r},${c - 1}`] == 1
             ) {
-                if (crt > 100) return false
+                if (crt > 100) return location.reload()
                 crt++
                 r = Math.floor(Math.random() * gridSize)
                 c = Math.floor(Math.random() * gridSize)
@@ -379,6 +360,12 @@
                     )
                     // && usedIndex[nr][nc]==0
                 ) {
+                    if (
+                        !!usedIndex[`${nr},${nc}`]
+                        && (nr !== start[0] && nc !== start[1])
+                        && (nr !== end[0] && nc !== end[1])
+                        && usedIndex[`${nr},${nc}`] == 1
+                    ) continue
                     const randomNoise = Math.random() * .2;
                     const newGScore = gScore + 1 + randomNoise;
                     const fScore = newGScore + heuristic(nr, nc);
@@ -395,9 +382,6 @@
     }
     function bfs(start, end) {
         console.log(`log of bfs`);
-        // console.log(start, end);
-        // console.log(usedIndex);
-        // usedIndex[`${start[0]},${start[1]}`]
         let [r1, c1] = start;
         var d = gridMatrix[r1][c1]?.split(".")[1];
         if (+d === 0) r1--;
@@ -416,12 +400,10 @@
                 && c >= 0
                 && c < cols
                 && visited[r][c] == false
-                // && usedIndex[`${r},${c}`]==0
             ) {
                 const newPath = [...path, [r, c]];
                 visited[r][c] = true;
                 if (r === end[0] && c === end[1]) {
-                    // console.log(`found path for [[${start}],[${end}]]`);
                     return newPath;
                 }
                 for (const [dr, dc] of neighbors) {
@@ -454,20 +436,22 @@
                 usedIndex[`${r1},${c1}`] = 1
             }
         });
-        // path.forEach((e, idx) => {
-        //     const [r1, c1] = e
-        //     neighbors.forEach(([dr, dc]) => {
-        //         var nr = r1 + dr
-        //         var nc = c1 + dc
-        //         if (
-        //             nr >= 0
-        //             && nr < gridMatrix.length
-        //             && nc >= 0
-        //             && nc < gridMatrix[0].length
-        //             && gridMatrix[nr][nc][0] == '5'
-        //         ) usedIndex[`${nr},${nc}`] = 1
-        //     });
-        // })
+        path.forEach((e, idx) => {
+            const [r1, c1] = e
+            neighbors.forEach(([dr, dc]) => {
+                var nr = r1 + dr
+                var nc = c1 + dc
+                if (
+                    nr >= 0
+                    && nr < gridMatrix.length
+                    && nc >= 0
+                    && nc < gridMatrix[0].length
+                    && gridMatrix[nr][nc][0] == '5'
+                ) {
+                    usedIndex[`${nr},${nc}`] = 1
+                }
+            });
+        })
         temp.pop()
         validJunctionCells.push(temp)
     }
@@ -536,21 +520,6 @@
         }
     }
     // ------------------------------------------------
-    const track_directions = [
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.14645 2.14645C7.34171 1.95118 7.65829 1.95118 7.85355 2.14645L11.8536 6.14645C12.0488 6.34171 12.0488 6.65829 11.8536 6.85355C11.6583 7.04882 11.3417 7.04882 11.1464 6.85355L8 3.70711L8 12.5C8 12.7761 7.77614 13 7.5 13C7.22386 13 7 12.7761 7 12.5L7 3.70711L3.85355 6.85355C3.65829 7.04882 3.34171 7.04882 3.14645 6.85355C2.95118 6.65829 2.95118 6.34171 3.14645 6.14645L7.14645 2.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 2C7.77614 2 8 2.22386 8 2.5L8 11.2929L11.1464 8.14645C11.3417 7.95118 11.6583 7.95118 11.8536 8.14645C12.0488 8.34171 12.0488 8.65829 11.8536 8.85355L7.85355 12.8536C7.75979 12.9473 7.63261 13 7.5 13C7.36739 13 7.24021 12.9473 7.14645 12.8536L3.14645 8.85355C2.95118 8.65829 2.95118 8.34171 3.14645 8.14645C3.34171 7.95118 3.65829 7.95118 3.85355 8.14645L7 11.2929L7 2.5C7 2.22386 7.22386 2 7.5 2Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.85355 3.14645C7.04882 3.34171 7.04882 3.65829 6.85355 3.85355L3.70711 7H12.5C12.7761 7 13 7.22386 13 7.5C13 7.77614 12.7761 8 12.5 8H3.70711L6.85355 11.1464C7.04882 11.3417 7.04882 11.6583 6.85355 11.8536C6.65829 12.0488 6.34171 12.0488 6.14645 11.8536L2.14645 7.85355C1.95118 7.65829 1.95118 7.34171 2.14645 7.14645L6.14645 3.14645C6.34171 2.95118 6.65829 2.95118 6.85355 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-    ]
-    const start_directions = [
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 3C9 2.44772 8.55229 2 8 2H7C6.44772 2 6 2.44772 6 3L6 14H1.5C1.22386 14 1 14.2239 1 14.5C1 14.7761 1.22386 15 1.5 15L6 15H9H13.5C13.7761 15 14 14.7761 14 14.5C14 14.2239 13.7761 14 13.5 14H9V3Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.499995 0.999995C0.223855 0.999995 -5.58458e-07 1.22385 -5.46388e-07 1.49999L-2.18554e-08 13.4999C-9.78492e-09 13.776 0.223855 13.9999 0.499995 13.9999C0.776136 13.9999 0.999991 13.776 0.999991 13.4999L0.999991 8.99993L12 8.99993C12.5523 8.99993 13 8.55222 13 7.99993L13 6.99994C13 6.44766 12.5523 5.99995 12 5.99995L0.999991 5.99995L0.999991 1.49999C0.999991 1.22385 0.776135 0.999995 0.499995 0.999995Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 0C1.22386 0 1 0.223858 1 0.5C1 0.776142 1.22386 1 1.5 1H6V12C6 12.5523 6.44772 13 7 13H8C8.55228 13 9 12.5523 9 12V1H13.5C13.7761 1 14 0.776142 14 0.5C14 0.223858 13.7761 0 13.5 0H9H6H1.5Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.4999 1C14.2237 1 13.9999 1.22386 13.9999 1.5L13.9999 6L2.99988 6C2.44759 6 1.99988 6.44772 1.99988 7L1.99988 8C1.99988 8.55228 2.44759 9 2.99988 9L13.9999 9L13.9999 13.5C13.9999 13.7761 14.2237 14 14.4999 14C14.776 14 14.9999 13.7761 14.9999 13.5L14.9999 9L14.9999 6L14.9999 1.5C14.9999 1.22386 14.776 1 14.4999 1Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-    ]
-    var junctions_valid_directions = []
-    const wins = document.querySelector(".wins>div")
-    const loses = document.querySelector(".loses>div")
     function grid_generator(size, gridMatrix) {
         const gridSize = size;
         const gridContainer = document.querySelector(".grid-container");
@@ -642,7 +611,7 @@
             [1, 0],
             [0, -1]
         ];
-        const invalidConditions = ['2', '3', '0', '1']; 
+        const invalidConditions = ['2', '3', '0', '1'];
         for (let i = 0; i < 4; i++) {
             if (d1[i] === 1) {
                 const rOffset = directionsOffsets[i][0];
@@ -722,9 +691,27 @@
             train_move(id, [s_r, s_c], speed);
         }, (1 / speed) * 5000);
     }
+    // ------------------------------------------------
+    function addCurveTracks(){
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                const e1 = gridMatrix[i][j];
+                if(e1[0]=='1'){
+                    const d1=e1[2]
+                    const nr=i+neighbors[d1][0]
+                    const nc=j+neighbors[d1][1]
+                    const e2=gridMatrix[nr][nc]
+                    const d2=e2[2]
+                    if(e2[0]=='1' && !!track_curves_directions[`${(+d1+2)%4},${d2}`]){
+                        document.querySelector(`.grid-container [data-row='${nr}'][data-col='${nc}']`).innerHTML=track_curves_directions[`${(+d1+2)%4},${d2}`]
+                    }
+                }
+            }            
+        }
+    }
     // run
     try {
-        generateRandomMap(5)
+        generateRandomMap(6)
         document.addEventListener("DOMContentLoaded", grid_generator(gridSize, gridMatrix));
         for (let row = 0; row < gridSize; row++) {
             for (let col = 0; col < gridSize; col++) {
@@ -732,6 +719,7 @@
                 if (a[0] == 4) res.push(parseInt(a[2]))
             }
         }
+        addCurveTracks()
         setInterval(async () => {
             if (!isPause) {
                 const end = res[Math.floor(Math.random() * (res.length))];
@@ -740,9 +728,9 @@
                     selectId = Math.floor(Math.random() * 100) + 1;
                 }
                 active_ids[selectId] = 1
-                train_init(selectId, end, 4)
+                train_init(selectId, end, 3)
             }
-        }, 5000);
+        }, 4000);
     }
     catch (error) {
         console.log(error);
