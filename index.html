@@ -16,7 +16,14 @@
 
     :root {
         --cell-height: 60px;
-        --cell-width: 60px
+        --cell-width: 60px;
+        --body-color: #1212125e;
+        --sTrack-color:#1E3A8A00;
+        --cTrack-color:#2564eb00;
+        --jTrack-color:#10b981;
+        --eTrack-color:#3b3b3b00;
+        --end-color:#D97706;
+        --start-color:#E5E7EB;
     }
 
     body {
@@ -26,7 +33,7 @@
         align-content: flex-start;
         flex-wrap: wrap;
         height: 100vh;
-        background-color: #f0f0f0;
+        background-color: var(--body-color);
         font-family: Arial, sans-serif;
     }
 
@@ -38,8 +45,6 @@
     }
 
     .grid-cell {
-        background-color: #ddd;
-        border: 2px solid #aaa;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -49,33 +54,34 @@
     }
 
     .track-straight {
-        background-color: #ffffff00;
+        background-color: var(--sTrack-color);
     }
 
     .track-curve {
-        background-color: #faa;
+        background-color: var(--cTrack-color);
     }
 
     .track-junction {
-        background-color: #afa;
+        background-color: var(--jTrack-color);
     }
 
     .track-empty {
-        background-color: #ddd;
+        background-color: var(--eTrack-color);
     }
 
     .start {
-        background-color: #247fe5
+        background-color: var(--start-color)
     }
 
     .end {
-        background-color: aqua;
+        background-color: var(--end-color);
     }
 
     .train {
         width: var(--cell-width);
         height: var(--cell-width);
         border: red solid;
+        background-color: red;
         position: absolute;
         text-align: center;
     }
@@ -87,7 +93,7 @@
     }
 
     .message {
-        background-color: #f9f9f9;
+        background-color: #ddd;
         border: 2px solid #ddd;
         border-radius: 10px;
         padding: 20px;
@@ -335,10 +341,7 @@
         while (pq.length) {
             const [fScore, gScore, r, c, path] = pq.shift();
             if (r === end[0] && c === end[1]) {
-                // console.log(path.length);
                 if (path.length < 4) location.reload()
-                // console.log(`path for [[${start}],[${end}]]`);
-                // console.log(path);
                 return [...path, [r, c]];
             }
             const newPath = [...path, [r, c]];
@@ -483,7 +486,6 @@
             s2 = Math.floor(Math.random() * l2)
             if (crt > 10) {
                 console.log("found no valid junction");
-                // location.reload()
                 return null
             }
             crt++
