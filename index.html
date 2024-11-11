@@ -18,12 +18,12 @@
         --cell-height: 60px;
         --cell-width: 60px;
         --body-color: #1212125e;
-        --sTrack-color:#1E3A8A00;
-        --cTrack-color:#2564eb00;
-        --jTrack-color:#10b981;
-        --eTrack-color:#3b3b3b00;
-        --end-color:#D97706;
-        --start-color:#E5E7EB;
+        --sTrack-color: #1E3A8A00;
+        --cTrack-color: #2564eb00;
+        --jTrack-color: #10b981;
+        --eTrack-color: #3b3b3b00;
+        --end-color: #D97706;
+        --start-color: #E5E7EB;
     }
 
     body {
@@ -51,6 +51,7 @@
         font-size: 20px;
         cursor: pointer;
         width: var(--cell-width);
+        /* outline: 1px black solid; */
     }
 
     .track-straight {
@@ -238,38 +239,8 @@
     var isPause = true
     const gridSize = 10
     var gridMatrix = new Array(gridSize)
-    var res = []
-    var active_ids = {}
-    var usedIndex = {}
-    var start = []
-    var ends = []
-    var validJunctionCells = []
-    var neighbors = [[-1, 0], [0, 1], [1, 0], [0, -1]]
-    const track_directions = [
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.14645 2.14645C7.34171 1.95118 7.65829 1.95118 7.85355 2.14645L11.8536 6.14645C12.0488 6.34171 12.0488 6.65829 11.8536 6.85355C11.6583 7.04882 11.3417 7.04882 11.1464 6.85355L8 3.70711L8 12.5C8 12.7761 7.77614 13 7.5 13C7.22386 13 7 12.7761 7 12.5L7 3.70711L3.85355 6.85355C3.65829 7.04882 3.34171 7.04882 3.14645 6.85355C2.95118 6.65829 2.95118 6.34171 3.14645 6.14645L7.14645 2.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 2C7.77614 2 8 2.22386 8 2.5L8 11.2929L11.1464 8.14645C11.3417 7.95118 11.6583 7.95118 11.8536 8.14645C12.0488 8.34171 12.0488 8.65829 11.8536 8.85355L7.85355 12.8536C7.75979 12.9473 7.63261 13 7.5 13C7.36739 13 7.24021 12.9473 7.14645 12.8536L3.14645 8.85355C2.95118 8.65829 2.95118 8.34171 3.14645 8.14645C3.34171 7.95118 3.65829 7.95118 3.85355 8.14645L7 11.2929L7 2.5C7 2.22386 7.22386 2 7.5 2Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.85355 3.14645C7.04882 3.34171 7.04882 3.65829 6.85355 3.85355L3.70711 7H12.5C12.7761 7 13 7.22386 13 7.5C13 7.77614 12.7761 8 12.5 8H3.70711L6.85355 11.1464C7.04882 11.3417 7.04882 11.6583 6.85355 11.8536C6.65829 12.0488 6.34171 12.0488 6.14645 11.8536L2.14645 7.85355C1.95118 7.65829 1.95118 7.34171 2.14645 7.14645L6.14645 3.14645C6.34171 2.95118 6.65829 2.95118 6.85355 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-    ]
-    const track_curves_directions={
-        '0,1':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="scale(1 -1)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
-        '1,2':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="matrix(0 1 1 0 0 0)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
-        '2,3':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="scale(-1 1)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
-        '3,0':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="scale(1 -1)rotate(90)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
-        '1,0':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="rotate(-90)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
-        '0,3':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="rotate(180)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
-        '3,2':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="rotate(90)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
-        '2,1':`<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`
-    }
-    const start_directions = [
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 3C9 2.44772 8.55229 2 8 2H7C6.44772 2 6 2.44772 6 3L6 14H1.5C1.22386 14 1 14.2239 1 14.5C1 14.7761 1.22386 15 1.5 15L6 15H9H13.5C13.7761 15 14 14.7761 14 14.5C14 14.2239 13.7761 14 13.5 14H9V3Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.499995 0.999995C0.223855 0.999995 -5.58458e-07 1.22385 -5.46388e-07 1.49999L-2.18554e-08 13.4999C-9.78492e-09 13.776 0.223855 13.9999 0.499995 13.9999C0.776136 13.9999 0.999991 13.776 0.999991 13.4999L0.999991 8.99993L12 8.99993C12.5523 8.99993 13 8.55222 13 7.99993L13 6.99994C13 6.44766 12.5523 5.99995 12 5.99995L0.999991 5.99995L0.999991 1.49999C0.999991 1.22385 0.776135 0.999995 0.499995 0.999995Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 0C1.22386 0 1 0.223858 1 0.5C1 0.776142 1.22386 1 1.5 1H6V12C6 12.5523 6.44772 13 7 13H8C8.55228 13 9 12.5523 9 12V1H13.5C13.7761 1 14 0.776142 14 0.5C14 0.223858 13.7761 0 13.5 0H9H6H1.5Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.4999 1C14.2237 1 13.9999 1.22386 13.9999 1.5L13.9999 6L2.99988 6C2.44759 6 1.99988 6.44772 1.99988 7L1.99988 8C1.99988 8.55228 2.44759 9 2.99988 9L13.9999 9L13.9999 13.5C13.9999 13.7761 14.2237 14 14.4999 14C14.776 14 14.9999 13.7761 14.9999 13.5L14.9999 9L14.9999 6L14.9999 1.5C14.9999 1.22386 14.776 1 14.4999 1Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
-    ]
-    var junctions_valid_directions = []
-    const wins = document.querySelector(".wins>div")
-    const loses = document.querySelector(".loses>div")
+    var regenerate = true
+
     for (var i = 0; i < gridSize; i++) {
         gridMatrix[i] = new Array(gridSize)
     }
@@ -278,13 +249,45 @@
             gridMatrix[i][j] = "5.0"
         }
     }
+    var usedIndex = {}
+    var ends = []
+    var validJunctionCells = []
+    var junctions_valid_directions = []
+
+    var active_ids = {}
+    var neighbors = [[-1, 0], [0, 1], [1, 0], [0, -1]]
+    const track_directions = [
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.14645 2.14645C7.34171 1.95118 7.65829 1.95118 7.85355 2.14645L11.8536 6.14645C12.0488 6.34171 12.0488 6.65829 11.8536 6.85355C11.6583 7.04882 11.3417 7.04882 11.1464 6.85355L8 3.70711L8 12.5C8 12.7761 7.77614 13 7.5 13C7.22386 13 7 12.7761 7 12.5L7 3.70711L3.85355 6.85355C3.65829 7.04882 3.34171 7.04882 3.14645 6.85355C2.95118 6.65829 2.95118 6.34171 3.14645 6.14645L7.14645 2.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 2C7.77614 2 8 2.22386 8 2.5L8 11.2929L11.1464 8.14645C11.3417 7.95118 11.6583 7.95118 11.8536 8.14645C12.0488 8.34171 12.0488 8.65829 11.8536 8.85355L7.85355 12.8536C7.75979 12.9473 7.63261 13 7.5 13C7.36739 13 7.24021 12.9473 7.14645 12.8536L3.14645 8.85355C2.95118 8.65829 2.95118 8.34171 3.14645 8.14645C3.34171 7.95118 3.65829 7.95118 3.85355 8.14645L7 11.2929L7 2.5C7 2.22386 7.22386 2 7.5 2Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.85355 3.14645C7.04882 3.34171 7.04882 3.65829 6.85355 3.85355L3.70711 7H12.5C12.7761 7 13 7.22386 13 7.5C13 7.77614 12.7761 8 12.5 8H3.70711L6.85355 11.1464C7.04882 11.3417 7.04882 11.6583 6.85355 11.8536C6.65829 12.0488 6.34171 12.0488 6.14645 11.8536L2.14645 7.85355C1.95118 7.65829 1.95118 7.34171 2.14645 7.14645L6.14645 3.14645C6.34171 2.95118 6.65829 2.95118 6.85355 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+    ]
+    const track_curves_directions = {
+        '0,1': `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="scale(1 -1)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '1,2': `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="matrix(0 1 1 0 0 0)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '2,3': `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="scale(-1 1)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '3,0': `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="scale(1 -1)rotate(90)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '1,0': `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="rotate(-90)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '0,3': `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="rotate(180)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '3,2': `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" transform="rotate(90)"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`,
+        '2,1': `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><path style="stroke:none;fill-rule:evenodd;fill:#000;fill-opacity:1" d="M13.926 4.55a.46.46 0 0 0 .136-.331.46.46 0 0 0-.136-.332l-3.75-3.75A.47.47 0 1 0 9.512.8l2.948 2.95H3.28A2.346 2.346 0 0 0 .938 6.094v7.5c0 .258.21.469.468.469a.47.47 0 0 0 .469-.47v-7.5c0-.777.629-1.405 1.406-1.405h9.18L9.51 7.637a.47.47 0 1 0 .665.664Zm0 0"/></svg>`
+    }
+    const start_directions = [
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 3C9 2.44772 8.55229 2 8 2H7C6.44772 2 6 2.44772 6 3L6 14H1.5C1.22386 14 1 14.2239 1 14.5C1 14.7761 1.22386 15 1.5 15L6 15H9H13.5C13.7761 15 14 14.7761 14 14.5C14 14.2239 13.7761 14 13.5 14H9V3Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.499995 0.999995C0.223855 0.999995 -5.58458e-07 1.22385 -5.46388e-07 1.49999L-2.18554e-08 13.4999C-9.78492e-09 13.776 0.223855 13.9999 0.499995 13.9999C0.776136 13.9999 0.999991 13.776 0.999991 13.4999L0.999991 8.99993L12 8.99993C12.5523 8.99993 13 8.55222 13 7.99993L13 6.99994C13 6.44766 12.5523 5.99995 12 5.99995L0.999991 5.99995L0.999991 1.49999C0.999991 1.22385 0.776135 0.999995 0.499995 0.999995Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 0C1.22386 0 1 0.223858 1 0.5C1 0.776142 1.22386 1 1.5 1H6V12C6 12.5523 6.44772 13 7 13H8C8.55228 13 9 12.5523 9 12V1H13.5C13.7761 1 14 0.776142 14 0.5C14 0.223858 13.7761 0 13.5 0H9H6H1.5Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+        `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.4999 1C14.2237 1 13.9999 1.22386 13.9999 1.5L13.9999 6L2.99988 6C2.44759 6 1.99988 6.44772 1.99988 7L1.99988 8C1.99988 8.55228 2.44759 9 2.99988 9L13.9999 9L13.9999 13.5C13.9999 13.7761 14.2237 14 14.4999 14C14.776 14 14.9999 13.7761 14.9999 13.5L14.9999 9L14.9999 6L14.9999 1.5C14.9999 1.22386 14.776 1 14.4999 1Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`,
+    ]
+    const wins = document.querySelector(".wins>div")
+    const loses = document.querySelector(".loses>div")
+
     // --------------Random Map Generator--------------
     function togglePause() {
         isPause = isPause ? false : true
         pauseBtn = document.querySelector(".pause")
         if (isPause) pauseBtn.innerHTML = "Start"
         else pauseBtn.innerHTML = "Pause"
-    }    
+    }
     function validDirections(r, c) {
         var d = [1, 1, 1, 1]
         if (r - 1 < 0) d[0] = 0
@@ -294,7 +297,7 @@
         return d
     }
     function randomStartGen() {
-        console.log("log of randomStartGen");
+        // console.log("log of randomStartGen");
         var r = Math.floor(Math.random() * gridSize)
         var c = Math.floor(Math.random() * gridSize)
         var d = validDirections(r, c)
@@ -302,10 +305,14 @@
         while (d[t1] != 1) t1 = Math.floor(Math.random() * 4)
         gridMatrix[r][c] = `0.${t1}`
         usedIndex[`${r},${c}`] = 1
-        start = [r, c]
+        for (let i = 0; i < 4; i++) {
+            const e = neighbors[i];
+            if (r + e[0] >= 0 && r + e[0] < gridSize && c + e[1] >= 0 && c + e[1] < gridSize) usedIndex[`${r + e[0]},${c + e[1]}`] = 1
+        }
+        return [r, c]
     }
     function randomEndGen(n, s) {
-        console.log("log of randomEndGen");
+        // console.log("log of randomEndGen");
         for (let i = 1; i <= n; i++) {
             var r = Math.floor(Math.random() * gridSize)
             var c = Math.floor(Math.random() * gridSize)
@@ -317,7 +324,10 @@
                 || usedIndex[`${r + 1},${c}`] == 1
                 || usedIndex[`${r},${c - 1}`] == 1
             ) {
-                if (crt > 100) return location.reload()
+                if (crt > 100) {
+                    return regenerate = true
+                    // return location.reload()
+                }
                 crt++
                 r = Math.floor(Math.random() * gridSize)
                 c = Math.floor(Math.random() * gridSize)
@@ -331,8 +341,12 @@
             gridMatrix[r][c] = `4.${t1}.${i + s - 1}`
         }
     }
-    function aStar(start, end) {
-        console.log("log of aStar");
+    function aStar(start, end, crt) {
+        // console.log("log of aStar");
+        if (crt >= 100) {
+            console.log(`A-star algo was called more than 100 times so its returning`);
+            return null
+        }
         const [rows, cols] = [gridMatrix.length, gridMatrix[0].length];
         const heuristic = (r, c) => Math.abs(r - end[0]) + Math.abs(c - end[1]) + Math.random() * 2;
         const distances = Array.from({ length: rows }, () => Array(cols).fill(Infinity));
@@ -341,7 +355,11 @@
         while (pq.length) {
             const [fScore, gScore, r, c, path] = pq.shift();
             if (r === end[0] && c === end[1]) {
-                if (path.length < 4) location.reload()
+                if (path.length < 4) {
+                    regenerate = true
+                    return null
+                }
+                regenerate = false
                 return [...path, [r, c]];
             }
             const newPath = [...path, [r, c]];
@@ -354,14 +372,12 @@
                     && nc < cols
                     && gridMatrix[nr][nc][0] !== '0'
                     && gridMatrix[nr][nc][0] !== '1'
-                    // && gridMatrix[nr][nc][0] !== '2'
                     && gridMatrix[nr][nc][0] !== '3'
                     && !(
                         gridMatrix[nr][nc][0] == '4'
                         && nr != end[0]
                         && nc != end[1]
                     )
-                    // && usedIndex[nr][nc]==0
                 ) {
                     if (
                         !!usedIndex[`${nr},${nc}`]
@@ -380,11 +396,12 @@
             }
             pq.sort((a, b) => a[0] - b[0]);
         }
-        location.reload()
+        regenerate = true
+        // console.log(`Do location.reload as no path was found from ${start} to ${end}`);
         return null;
     }
     function bfs(start, end) {
-        console.log(`log of bfs`);
+        // console.log(`log of bfs`);
         let [r1, c1] = start;
         var d = gridMatrix[r1][c1]?.split(".")[1];
         if (+d === 0) r1--;
@@ -395,6 +412,33 @@
         const [rows, cols] = [gridMatrix.length, gridMatrix[0].length];
         const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
         const queue = [[bfs_start[0], bfs_start[1], []]];
+
+        function helper_1(type, start, end) {
+            // console.log('log of helper_1');
+            if (type == 1) {
+                usedIndex[`${start[0]},${start[1]}`] = 0
+                usedIndex[`${end[0]},${end[1]}`] = 0
+                for (let i = 0; i < 4; i++) {
+                    const e = neighbors[i];
+                    if (usedIndex[`${start[0] + e[0]},${start[1] + e[1]}`] == 1 && gridMatrix[start[0] + e[0]][start[1] + e[1]][0] == '5') {
+                        usedIndex[`${start[0] + e[0]},${start[1] + e[1]}`] = 0
+                    }
+                }
+            }
+            else {
+                usedIndex[`${start[0]},${start[1]}`] = 1
+                usedIndex[`${end[0]},${end[1]}`] = 1
+                for (let i = 0; i < 4; i++) {
+                    const e = neighbors[i];
+                    if (usedIndex[`${start[0] + e[0]},${start[1] + e[1]}`] == 1 && usedIndex[`${start[0] + e[0]},${start[1] + e[1]}`] == 0) {
+                        usedIndex[`${start[0] + e[0]},${start[1] + e[1]}`] = 1
+                    }
+                }
+            }
+        }
+
+        helper_1(1, bfs_start, end)
+
         while (queue.length) {
             const [r, c, path] = queue.shift();
             if (
@@ -403,10 +447,13 @@
                 && c >= 0
                 && c < cols
                 && visited[r][c] == false
+                && usedIndex[`${r},${c}`] !== 1
+                && gridMatrix[r][c][0] == '5'
             ) {
                 const newPath = [...path, [r, c]];
                 visited[r][c] = true;
                 if (r === end[0] && c === end[1]) {
+                    helper_1(0, bfs_start, end)
                     return newPath;
                 }
                 for (const [dr, dc] of neighbors) {
@@ -414,11 +461,12 @@
                 }
             }
         }
-        console.log("returning null");
+        helper_1(0, bfs_start, end)
+        // console.log(`No path found from ${bfs_start} to ${end}`);
         return null;
     }
     function constructPath(path) {
-        console.log("log of constructPath");
+        // console.log("log of constructPath");
         var temp = []
         path.forEach((e, idx) => {
             if (
@@ -459,7 +507,7 @@
         validJunctionCells.push(temp)
     }
     function nextRandomStart(endPoint) {
-        console.log("log of nextRandomStart");
+        // console.log("log of nextRandomStart");
         var invalidJunctionCells = {}
         const l1 = validJunctionCells.length
         var s1 = Math.floor(Math.random() * l1)
@@ -472,54 +520,91 @@
                 invalidJunctionCells[`${e[0]},${e[1]}`] = 0
             }
         }
-        while (
-            invalidJunctionCells[
-            `${validJunctionCells[s1][s2][0]},${validJunctionCells[s1][s2][1]}`
-            ] == 0
-            || bfs(validJunctionCells[s1][s2], endPoint) == null
-        ) {
-            invalidJunctionCells[
-                `${validJunctionCells[s1][s2][0]},${validJunctionCells[s1][s2][1]}`
-            ] = 1
-            s1 = Math.floor(Math.random() * l1)
-            l2 = validJunctionCells[s1].length
-            s2 = Math.floor(Math.random() * l2)
-            if (crt > 10) {
-                console.log("found no valid junction");
-                return null
-            }
-            crt++
-        }
-        return validJunctionCells[s1][s2]
-    }
-    function generateRandomMap(nodes) {
-        console.log("log of generateRandomMap");
         try {
-            randomStartGen()
-            var path = 0
-            randomEndGen(1, 1)
-            var [r1, c1] = start
-            var [r2, c2] = ends[0]
-            var d1 = gridMatrix[r1][c1].split(".")[1]
-            if (+d1 == 0) r1--
-            else if (+d1 == 1) c1++
-            else if (+d1 == 2) r1++
-            else c1--
-            path = aStar([r1, c1], [r2, c2])
-            constructPath(path)
-            for (let i = 1; i < nodes; i++) {
-                randomEndGen(1, i + 1)
-                var [r1, c1] = nextRandomStart(ends[i])
-                var [r2, c2] = ends[i]
-                var d1 = gridMatrix[r1][c1].split(".")[1]
-                gridMatrix[r1][c1] = `3.${d1}`
-                path = aStar([r1, c1], [r2, c2])
-                // validJunctionCells = []
-                constructPath(path)
+            // console.log(validJunctionCells);            
+            while (
+                invalidJunctionCells[
+                `${validJunctionCells[s1][s2][0]},${validJunctionCells[s1][s2][1]}`
+                ] == 0
+            ) {
+                if (invalidJunctionCells.length == l1) {
+                    // console.log('no valid junction cell');
+                    regenerate = true
+                    break
+                }
+                if (bfs(validJunctionCells[s1][s2], endPoint) == null) {
+                    invalidJunctionCells[
+                        `${validJunctionCells[s1][s2][0]},${validJunctionCells[s1][s2][1]}`
+                    ] = 1
+                }
+                // console.log(`checking:${validJunctionCells[s1][s2][0]},${validJunctionCells[s1][s2][1]}`);
+                s1 = Math.floor(Math.random() * l1)
+                l2 = validJunctionCells[s1].length
+                s2 = Math.floor(Math.random() * l2)
+                if (crt > 50) {
+                    // console.log("found no valid junction");
+                    return null
+                }
+                crt++
             }
+            regenerate = false
+            // console.log(`validJunctionCells[s1][s2]:${validJunctionCells[s1][s2]}`);
+            return validJunctionCells[s1][s2]
         } catch (error) {
+            regenerate = true
             console.log(error);
         }
+    }
+    function generateRandomMap(nodes) {
+        // console.log("log of generateRandomMap");
+        var crt = 0
+        while (regenerate) {
+            try {
+                if (crt > 100) {
+                    console.log('Too many iteration need to optimize the code');
+                    return null
+                }
+                crt += 1
+                var path = 0
+                for (var i = 0; i < gridSize; i++) {
+                    gridMatrix[i] = new Array(gridSize)
+                }
+                for (var i = 0; i < gridSize; i++) {
+                    for (var j = 0; j < gridSize; j++) {
+                        gridMatrix[i][j] = "5.0"
+                    }
+                }
+                usedIndex = {}
+                ends = []
+                validJunctionCells = []
+                junctions_valid_directions = []
+                
+                var [r1, c1] = randomStartGen()
+                randomEndGen(1, 1)
+                var [r2, c2] = ends[0]
+                var d1 = gridMatrix[r1][c1].split(".")[1]
+                if (+d1 == 0) r1--
+                else if (+d1 == 1) c1++
+                else if (+d1 == 2) r1++
+                else c1--
+                path = aStar([r1, c1], [r2, c2], 0)
+                constructPath(path)
+                for (let i = 1; i < nodes; i++) {
+                    // console.log(`Generating path for node ${i + 1}`);
+                    randomEndGen(1, i + 1)
+                    var [r1, c1] = nextRandomStart(ends[i])
+                    // console.log(`Path starts from ${[r1, c1]}`);
+                    var [r2, c2] = ends[i]
+                    var d1 = gridMatrix[r1][c1].split(".")[1]
+                    gridMatrix[r1][c1] = `3.${d1}`
+                    path = aStar([r1, c1], [r2, c2], 0)
+                    constructPath(path)
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        console.log(`total iterations:${crt}`);            
     }
     // ------------------------------------------------
     function grid_generator(size, gridMatrix) {
@@ -601,7 +686,7 @@
         });
     }
     function toggleTrack(cell) {
-        console.log('log of toggleTrack');
+        // console.log('log of toggleTrack');
         const cur_d = parseInt(cell.dataset.direction)
         const jun_num = parseInt(cell.dataset.junctionNum)
         var r = +cell.dataset.row
@@ -694,27 +779,28 @@
         }, (1 / speed) * 5000);
     }
     // ------------------------------------------------
-    function addCurveTracks(){
+    function addCurveTracks() {
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
                 const e1 = gridMatrix[i][j];
-                if(e1[0]=='1'){
-                    const d1=e1[2]
-                    const nr=i+neighbors[d1][0]
-                    const nc=j+neighbors[d1][1]
-                    const e2=gridMatrix[nr][nc]
-                    const d2=e2[2]
-                    if(e2[0]=='1' && !!track_curves_directions[`${(+d1+2)%4},${d2}`]){
-                        document.querySelector(`.grid-container [data-row='${nr}'][data-col='${nc}']`).innerHTML=track_curves_directions[`${(+d1+2)%4},${d2}`]
+                if (e1[0] == '1') {
+                    const d1 = e1[2]
+                    const nr = i + neighbors[d1][0]
+                    const nc = j + neighbors[d1][1]
+                    const e2 = gridMatrix[nr][nc]
+                    const d2 = e2[2]
+                    if (e2[0] == '1' && !!track_curves_directions[`${(+d1 + 2) % 4},${d2}`]) {
+                        document.querySelector(`.grid-container [data-row='${nr}'][data-col='${nc}']`).innerHTML = track_curves_directions[`${(+d1 + 2) % 4},${d2}`]
                     }
                 }
-            }            
+            }
         }
     }
     // run
     try {
         generateRandomMap(6)
         document.addEventListener("DOMContentLoaded", grid_generator(gridSize, gridMatrix));
+        var res = []
         for (let row = 0; row < gridSize; row++) {
             for (let col = 0; col < gridSize; col++) {
                 var a = gridMatrix[row][col].split(".")
