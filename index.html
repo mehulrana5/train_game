@@ -122,19 +122,27 @@
         /* margin-top: 15px; */
     }
 
-    .btn {
+    .difficulty,.btn{
+        outline: none;
+        border: none;
+        border-radius: 5px;
         padding: 10px 20px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn {
         font-size: 1em;
         color: white;
         background-color: #4caf50;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
     }
 
     .btn.pause:hover {
         background-color: #45a049;
+    }
+
+    .difficulty:hover{
+        background-color:rgba(0, 0, 0, 0.068)
     }
 
     .score-board {
@@ -219,6 +227,11 @@
             </ol>
             <div class="menu">
                 <button class="btn pause" onclick="togglePause()">Start</button>
+                <select class="difficulty" onchange="handleSelectChange(event)">
+                    <option value="e">Easy</option>
+                    <option value="m">Medium</option>
+                    <option value="h">Hard</option>
+                </select>
             </div>
             <div class="score-board">
                 <div class="wins">
@@ -240,6 +253,7 @@
     const gridSize = 10
     var gridMatrix = new Array(gridSize)
     var regenerate = true
+    var NumberOfEnds=localStorage.getItem("NumberOfEnds")||2
 
     for (var i = 0; i < gridSize; i++) {
         gridMatrix[i] = new Array(gridSize)
@@ -287,6 +301,17 @@
         pauseBtn = document.querySelector(".pause")
         if (isPause) pauseBtn.innerHTML = "Start"
         else pauseBtn.innerHTML = "Pause"
+    }
+    function handleSelectChange(e){
+        location.reload()
+        var lvl=e.target.value
+        if(lvl=='e')NumberOfEnds=2
+        else if(lvl=='m')NumberOfEnds=4
+        else NumberOfEnds=6
+        localStorage.setItem("NumberOfEnds",NumberOfEnds)
+        document.querySelector(".grid-container").innerHTML=""
+        regenerate=true        
+        generateRandomMap(NumberOfEnds);
     }
     function validDirections(r, c) {
         var d = [1, 1, 1, 1]
@@ -556,7 +581,10 @@
         }
     }
     function generateRandomMap(nodes) {
-        // console.log("log of generateRandomMap");
+        const diff=document.querySelector(".difficulty")
+        if(localStorage.getItem("NumberOfEnds")==2)diff.value='e'
+        if(localStorage.getItem("NumberOfEnds")==4)diff.value='m'
+        if(localStorage.getItem("NumberOfEnds")==6)diff.value='h'
         var crt = 0
         while (regenerate) {
             try {
@@ -604,7 +632,8 @@
                 console.log(error);
             }
         }
-        console.log(`total iterations:${crt}`);            
+        console.log(`total iterations:${crt}`);
+        // console.log(gridMatrix);
     }
     // ------------------------------------------------
     function grid_generator(size, gridMatrix) {
@@ -798,7 +827,7 @@
     }
     // run
     try {
-        generateRandomMap(6)
+        generateRandomMap(NumberOfEnds)
         document.addEventListener("DOMContentLoaded", grid_generator(gridSize, gridMatrix));
         var res = []
         for (let row = 0; row < gridSize; row++) {
