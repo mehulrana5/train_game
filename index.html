@@ -90,7 +90,7 @@
     #container-1 {
         width: 500px;
         padding: 1em;
-        margin: 5px 0px 5px 0;
+        margin: 5px 0px 30px 0;
     }
 
     .message {
@@ -116,13 +116,19 @@
         line-height: 1.5;
     }
 
-    .menu {
+    .title {
         display: flex;
-        justify-content: center;
-        /* margin-top: 15px; */
+        justify-content: space-between;
+        margin-bottom: 10px;
     }
 
-    .difficulty,.btn{
+    .menu {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .difficulty,
+    .btn {
         outline: none;
         border: none;
         border-radius: 5px;
@@ -141,8 +147,8 @@
         background-color: #45a049;
     }
 
-    .difficulty:hover{
-        background-color:rgba(0, 0, 0, 0.068)
+    .difficulty:hover {
+        background-color: rgba(0, 0, 0, 0.068)
     }
 
     .score-board {
@@ -177,6 +183,31 @@
 
     .loses {
         background-color: #f8d7da;
+    }
+
+    .btn.pause,
+    .difficulty,
+    .wins,
+    .loses {
+        width: 40%;
+    }
+
+    .instructions {
+        max-height: 1000px;
+        transition: max-height 0.4s ease, opacity 0.4s ease;
+    }
+
+    .instructions.hidden {
+        max-height: 0;
+        opacity: 0;
+    }
+
+    .inst_toggle {
+        transition: transform 0.2s ease;
+    }
+
+    .inst_toggle:active {
+        transform: scale(0.95);
     }
 
     @media(max-width:500px) {
@@ -218,8 +249,13 @@
 <body>
     <div id="container-1">
         <div class="message">
-            <h3>How to Play</h3>
-            <ol>
+            <div class="title">
+                <h3>How to Play</h3>
+                <button class="inst_toggle" onclick="toggleInstructions()">
+                    Hide
+                </button>
+            </div>
+            <ol class="instructions">
                 <li>A red moving box with a number on top will appear.</li>
                 <li>Click the green boxes to change the box's path.</li>
                 <li>Boxes with random stations will appear continuously, so adjust the path in real-time.</li>
@@ -253,7 +289,7 @@
     const gridSize = 10
     var gridMatrix = new Array(gridSize)
     var regenerate = true
-    var NumberOfEnds=localStorage.getItem("NumberOfEnds")||2
+    var NumberOfEnds = localStorage.getItem("NumberOfEnds") || 2
 
     for (var i = 0; i < gridSize; i++) {
         gridMatrix[i] = new Array(gridSize)
@@ -294,7 +330,16 @@
     ]
     const wins = document.querySelector(".wins>div")
     const loses = document.querySelector(".loses>div")
+    function toggleInstructions() {
+        const instructions = document.querySelector('.instructions');
+        const button = document.querySelector('.inst_toggle');
 
+        instructions.classList.toggle('hidden');
+
+        button.innerHTML = instructions.classList.contains('hidden')
+            ? 'Show'
+            : 'Hide';
+    }
     // --------------Random Map Generator--------------
     function togglePause() {
         isPause = isPause ? false : true
@@ -302,15 +347,15 @@
         if (isPause) pauseBtn.innerHTML = "Start"
         else pauseBtn.innerHTML = "Pause"
     }
-    function handleSelectChange(e){
+    function handleSelectChange(e) {
         location.reload()
-        var lvl=e.target.value
-        if(lvl=='e')NumberOfEnds=2
-        else if(lvl=='m')NumberOfEnds=4
-        else NumberOfEnds=6
-        localStorage.setItem("NumberOfEnds",NumberOfEnds)
-        document.querySelector(".grid-container").innerHTML=""
-        regenerate=true        
+        var lvl = e.target.value
+        if (lvl == 'e') NumberOfEnds = 2
+        else if (lvl == 'm') NumberOfEnds = 4
+        else NumberOfEnds = 6
+        localStorage.setItem("NumberOfEnds", NumberOfEnds)
+        document.querySelector(".grid-container").innerHTML = ""
+        regenerate = true
         generateRandomMap(NumberOfEnds);
     }
     function validDirections(r, c) {
@@ -581,10 +626,10 @@
         }
     }
     function generateRandomMap(nodes) {
-        const diff=document.querySelector(".difficulty")
-        if(localStorage.getItem("NumberOfEnds")==2)diff.value='e'
-        if(localStorage.getItem("NumberOfEnds")==4)diff.value='m'
-        if(localStorage.getItem("NumberOfEnds")==6)diff.value='h'
+        const diff = document.querySelector(".difficulty")
+        if (localStorage.getItem("NumberOfEnds") == 2) diff.value = 'e'
+        if (localStorage.getItem("NumberOfEnds") == 4) diff.value = 'm'
+        if (localStorage.getItem("NumberOfEnds") == 6) diff.value = 'h'
         var crt = 0
         while (regenerate) {
             try {
@@ -606,7 +651,7 @@
                 ends = []
                 validJunctionCells = []
                 junctions_valid_directions = []
-                
+
                 var [r1, c1] = randomStartGen()
                 randomEndGen(1, 1)
                 var [r2, c2] = ends[0]
