@@ -768,46 +768,71 @@
         train_move(id, [s_r, s_c], speed);
     }
     function train_move(id, current, speed) {
-        setTimeout(() => {
-            const train = document.querySelector(`#train_${id}`);
-            const current_cell = document.querySelector(`.grid-cell[data-row="${current[0]}"][data-col="${current[1]}"]`);
-            if (!current_cell) {
-                console.error("Next cell not found");
+        const train = document.querySelector(`#train_${id}`);
+        if (!train) return;
+
+        const fromCell = document.querySelector(`.grid-cell[data-row="${current[0]}"][data-col="${current[1]}"]`);
+        if (!fromCell) return;
+
+        const fromRect = fromCell.getBoundingClientRect();
+        let startX = fromRect.left + window.scrollX;
+        let startY = fromRect.top + window.scrollY;
+
+        // read NEXT cell direction live at departure
+        const d = parseInt(fromCell.dataset.direction);
+        let nr = current[0], nc = current[1];
+        if (d === 0) nr--;
+        else if (d === 1) nc++;
+        else if (d === 2) nr++;
+        else nc--;
+
+        const toCell = document.querySelector(`.grid-cell[data-row="${nr}"][data-col="${nc}"]`);
+        if (!toCell) return;
+
+        const toRect = toCell.getBoundingClientRect();
+        const endX = toRect.left + window.scrollX;
+        const endY = toRect.top + window.scrollY;
+
+        const duration = (1 / speed) * 5000;
+        let startTime = null;
+
+        train.style.transition = 'none';
+
+        function step(ts) {
+            if (!startTime) startTime = ts;
+
+            if (isPause) {
+                startTime = ts; // freeze: reset so it doesn't jump on resume
+                requestAnimationFrame(step);
                 return;
             }
-            const rect = current_cell.getBoundingClientRect();
-            const x = rect.left + window.scrollX;
-            const y = rect.top + window.scrollY;
-            const d = current_cell.dataset.direction;
-            train.style.left = `${x}px`;
-            train.style.top = `${y}px`;
-            train.style.transition = `1s`;
-            var a = current_cell.dataset.end
-            if (!!a) {
-                if (a == train.dataset.end) {
-                    wins.innerHTML = `${1 + +wins.textContent}`
-                }
-                else {
-                    loses.innerHTML = `${1 + +loses.textContent}`
-                }
-                setTimeout(() => {
-                    document.querySelector(`#train_${id}`).remove()
-                }, 1000);
-                delete active_ids[id]
-                return true
+
+            const elapsed = ts - startTime;
+            const t = Math.min(elapsed / duration, 1);
+
+            train.style.left = `${startX + (endX - startX) * t}px`;
+            train.style.top = `${startY + (endY - startY) * t}px`;
+
+            if (t < 1) {
+                requestAnimationFrame(step);
+                return;
             }
-            let s_r = parseInt(current_cell.dataset.row);
-            let s_c = parseInt(current_cell.dataset.col);
-            if (!isPause) {
-                if (d == 0) --s_r;
-                else if (d == 1) ++s_c;
-                else if (d == 2) ++s_r;
-                else if (d == 3) --s_c;
+
+            // arrived at toCell
+            if (toCell.dataset.end) {
+                if (toCell.dataset.end == train.dataset.end) wins.innerHTML = `${1 + +wins.textContent}`;
+                else loses.innerHTML = `${1 + +loses.textContent}`;
+                setTimeout(() => { const tr = document.querySelector(`#train_${id}`); if (tr) tr.remove(); }, 600);
+                delete active_ids[id];
+                return;
             }
-            train_move(id, [s_r, s_c], speed);
-        }, (1 / speed) * 5000);
+
+            // read junction direction LIVE at arrival — this is the key
+            train_move(id, [nr, nc], speed);
+        }
+
+        requestAnimationFrame(step);
     }
-    // ------------------------------------------------
     function addCurveTracks() {
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
