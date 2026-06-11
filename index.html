@@ -194,12 +194,16 @@
 
     .instructions {
         max-height: 1000px;
-        transition: max-height 0.4s ease, opacity 0.4s ease;
+        overflow: hidden;
+        transition: max-height 0.4s ease, opacity 0.4s ease, margin 0.4s ease;
     }
 
     .instructions.hidden {
         max-height: 0;
         opacity: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+        pointer-events: none;
     }
 
     .inst_toggle {
