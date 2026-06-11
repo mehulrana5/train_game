@@ -295,6 +295,18 @@
     var regenerate = true
     var NumberOfEnds = localStorage.getItem("NumberOfEnds") || 2
 
+    var instStatus = localStorage.getItem("instStatus") || "Show"
+    const instructions = document.querySelector('.instructions');
+    const button = document.querySelector('.inst_toggle');
+    if (instStatus === "Show") {
+        instructions.classList.add("hidden");
+        button.innerHTML = "Show"
+    }
+    else {
+        instructions.classList.remove("hidden");
+        button.innerHTML = "Hide"
+    }
+
     for (var i = 0; i < gridSize; i++) {
         gridMatrix[i] = new Array(gridSize)
     }
@@ -337,12 +349,11 @@
     function toggleInstructions() {
         const instructions = document.querySelector('.instructions');
         const button = document.querySelector('.inst_toggle');
-
         instructions.classList.toggle('hidden');
-
-        button.innerHTML = instructions.classList.contains('hidden')
-            ? 'Show'
-            : 'Hide';
+        var status = instructions.classList.contains('hidden') ? 'Show' : 'Hide';
+        button.innerHTML = status;
+        console.log(status);
+        localStorage.setItem("instStatus", status)
     }
     // --------------Random Map Generator--------------
     function togglePause() {
