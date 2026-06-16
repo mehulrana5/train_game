@@ -90,6 +90,38 @@
         justify-content: center;
     }
 
+    @keyframes trainAppear {
+        from {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes trainDestroy {
+        from {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        to {
+            opacity: 0;
+            transform: scale(0);
+        }
+    }
+
+    .train.appear {
+        animation: trainAppear 0.5s ease-out forwards;
+    }
+
+    .train.destroy {
+        animation: trainDestroy 0.5s ease-in forwards;
+    }
+
     #container-1 {
         width: 500px;
         padding: 1em;
@@ -813,7 +845,7 @@
         const d = +start.dataset.direction;
         const train = document.createElement("div");
         train.id = `train_${id}`;
-        train.className = "train";
+        train.className = "train appear";
         train.dataset.end = endPoint;
         train.style.left = `${x}px`;
         train.style.top = `${y}px`;
@@ -885,7 +917,8 @@
             if (toCell.dataset.end) {
                 if (toCell.dataset.end == train.dataset.end) wins.innerHTML = `${1 + +wins.textContent}`;
                 else loses.innerHTML = `${1 + +loses.textContent}`;
-                setTimeout(() => { const tr = document.querySelector(`#train_${id}`); if (tr) tr.remove(); }, 600);
+                train.classList.add("destroy");
+                setTimeout(() => { const tr = document.querySelector(`#train_${id}`); if (tr) tr.remove(); }, 500);
                 delete active_ids[id];
                 return;
             }
