@@ -302,6 +302,7 @@
             </ol>
             <div class="menu">
                 <button class="btn pause" onclick="togglePause()">Start</button>
+                <button class="btn" onclick="resetGame()" style="background-color: #f59e0b;">New Map</button>
                 <select class="difficulty" onchange="handleSelectChange(event)">
                     <option value="e">Easy</option>
                     <option value="m">Medium</option>
@@ -398,15 +399,12 @@
         else pauseBtn.innerHTML = "Pause"
     }
     function handleSelectChange(e) {
-        location.reload()
-        var lvl = e.target.value
-        if (lvl == 'e') NumberOfEnds = 2
-        else if (lvl == 'm') NumberOfEnds = 4
-        else NumberOfEnds = 6
-        localStorage.setItem("NumberOfEnds", NumberOfEnds)
-        document.querySelector(".grid-container").innerHTML = ""
-        regenerate = true
-        generateRandomMap(NumberOfEnds);
+        var lvl = e.target.value;
+        if (lvl == 'e') NumberOfEnds = 2;
+        else if (lvl == 'm') NumberOfEnds = 4;
+        else NumberOfEnds = 6;
+        localStorage.setItem("NumberOfEnds", NumberOfEnds);
+        resetGame();
     }
     function validDirections(r, c) {
         var d = [1, 1, 1, 1]
@@ -729,6 +727,26 @@
         }
         console.log(`total iterations:${crt}`);
         // console.log(gridMatrix);
+    }
+    function resetGame() {
+        isPause = true;
+        document.querySelector(".pause").innerHTML = "Start";
+
+        // Clear existing DOM
+        document.querySelector(".grid-container").innerHTML = "";
+
+        // Clear active trains
+        Object.keys(active_ids).forEach(id => {
+            const tr = document.getElementById(`train_${id}`);
+            if (tr) tr.remove();
+        });
+        active_ids = {};
+
+        // Reset state and re-initialize
+        regenerate = true;
+        generateRandomMap(NumberOfEnds);
+        grid_generator(gridSize, gridMatrix);
+        addCurveTracks();
     }
     // ------------------------------------------------
     function grid_generator(size, gridMatrix) {
