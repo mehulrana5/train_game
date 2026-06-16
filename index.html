@@ -729,24 +729,25 @@
         // console.log(gridMatrix);
     }
     function resetGame() {
-        isPause = true;
-        document.querySelector(".pause").innerHTML = "Start";
+        // isPause = true;
+        // document.querySelector(".pause").innerHTML = "Start";
 
-        // Clear existing DOM
-        document.querySelector(".grid-container").innerHTML = "";
+        // // Clear existing DOM
+        // document.querySelector(".grid-container").innerHTML = "";
 
-        // Clear active trains
-        Object.keys(active_ids).forEach(id => {
-            const tr = document.getElementById(`train_${id}`);
-            if (tr) tr.remove();
-        });
-        active_ids = {};
+        // // Clear active trains
+        // Object.keys(active_ids).forEach(id => {
+        //     const tr = document.getElementById(`train_${id}`);
+        //     if (tr) tr.remove();
+        // });
+        // active_ids = {};
 
-        // Reset state and re-initialize
-        regenerate = true;
-        generateRandomMap(NumberOfEnds);
-        grid_generator(gridSize, gridMatrix);
-        addCurveTracks();
+        // // Reset state and re-initialize
+        // regenerate = true;
+        // generateRandomMap(NumberOfEnds);
+        // grid_generator(gridSize, gridMatrix);
+        // addCurveTracks();
+        window.location.reload();
     }
     // ------------------------------------------------
     function grid_generator(size, gridMatrix) {
